@@ -1,0 +1,157 @@
+debug: false
+mysql:
+  server:
+    host: '127.0.0.1'
+    port: '3306'
+    user: 'root'
+    pass: 'root'
+    data: 'server'
+  homepage:
+    host: '127.0.0.1'
+    port: '3306'
+    user: 'root'
+    pass: 'root'
+    data: 'homepage'
+  forum:
+    host: '127.0.0.1'
+    port: '3306'
+    user: 'root'
+    pass: 'root'
+    data: 'forum'
+  tables:
+    test: 'test'
+servernames:
+  city: 'City'
+  mg: 'MiniGames'
+  hg: 'HungerGames'
+  pvp: 'PvP'
+  lobby: 'Lobby'
+  creative: 'CW'
+  bedwars1: 'BW'
+  bedwars2: 'BW'
+  bedwars3: 'BW'
+  bedwars4: 'BW'
+  bedwars5: 'BW'
+  bedwars6: 'BW'
+  bedwars7: 'BW'
+allow-proxy: false
+ignore-names:
+- fuck
+- fick
+- arsch
+- kack
+- durchfall
+chat:
+  waiting: 3000
+  warning: 5
+  mutetime: 600000
+  wordfilter:
+  - hure
+  - fuck
+  - fick
+  - hitler
+  - scheiss
+  - arsch
+  - missgeburt
+  - penner
+  - penis
+  - schwanz
+  - fotze
+  - pimmel
+  - pisser
+  - wichser
+  - bastard
+  - hurensohn
+  - hurentochter
+  - schlampe
+  - bitch
+  - schwuchtel
+  - opfer
+  - arschgeburt
+  - drecksack
+  - asi
+  - nutte
+  - hackfresse
+  - wichsvorlage
+  greeting:
+  - hallo
+  - hello
+  - hey
+  - hay
+  - hi
+  - nabend
+  - moin
+  - tach
+  - tag
+  - tagchen
+  - 'good morning'
+  - 'good evening'
+  - mahlzeit
+  - huhu
+commands:
+  hide:
+  - register
+  - login
+  info:
+  - give
+  - op
+  - gamemode
+  - gm
+  infokickpc: 75
+vote:
+  max: 1
+  prefix: '&f[&5Vote&f]'
+  msg:
+    de:
+    - '&cWusstest du das du noch offene Votes hast?'
+    - '&2Bitte Vote für den Server wenn er dir gefaellt.'
+    - '&cJeder Vote mit "/vote de" gibt dir 200 Coins und 1 Vote-Punkt mit denen du im GameStore Shoppen kannst.'
+    - '&2Desto öfter jeder Votet, desto bekannter kann der Server werden.'
+    - '&cHelf dir und uns neue Mitbewohner zu erhalten.' 
+    at:
+    - '&cWusstest du das du noch offene Votes hast?'
+    - '&2Bitte Vote für den Server wenn er dir gefaellt.'
+    - '&cJeder Vote mit "/vote de" gibt dir 200 Coins und 1 Vote-Punkt mit denen du im GameStore Shoppen kannst.'
+    - '&2Desto öfter jeder Votet, desto bekannter kann der Server werden.'
+    - '&cHelf dir und uns neue Mitbewohner zu erhalten.' 
+    ch:
+    - '&cWusstest du das du noch offene Votes hast?'
+    - '&2Bitte Vote für den Server wenn er dir gefaellt.'
+    - '&cJeder Vote mit "/vote de" gibt dir 200 Coins und 1 Vote-Punkt mit denen du im GameStore Shoppen kannst.'
+    - '&2Desto öfter jeder Votet, desto bekannter kann der Server werden.'
+    - '&cHelf dir und uns neue Mitbewohner zu erhalten.'
+    default:
+    - '&cWusstest du das du noch offene Votes hast?'
+    - '&2Bitte Vote für den Server wenn er dir gefaellt.'
+    - '&cJeder Vote mit "/vote de" gibt dir 200 Coins und 1 Vote-Punkt mit denen du im GameStore Shoppen kannst.'
+    - '&2Desto öfter jeder Votet, desto bekannter kann der Server werden.'
+    - '&cHelf dir und uns neue Mitbewohner zu erhalten.'
+motd:
+- '&2Get &4a &2daily &4Gift &2till &42. &2Christmas &4day &r&6|                             &9AMC-Server &r&6| &eVanilla Server'
+- '&4Get &2a &4daily &2Gift &4till &22. &4Christmas &2day &r&6|                             &9AMC-Server &r&6| &eVanilla Server'
+autostarts:
+  only-from:
+  - minigames
+  - city
+  wait-seconds: 30
+  check-server:
+    bedwars1:
+    - ./startServers/bedwars 1
+    bedwars2:
+    - ./startServers/bedwars 2
+    bedwars3:
+    - ./startServers/bedwars 3
+    bedwars4:
+    - ./startServers/bedwars 4
+    bedwars5:
+    - ./startServers/bedwars 5
+    bedwars6:
+    - ./startServers/bedwars 6
+    bedwars7:
+    - ./startServers/bedwars 7
+    bedwars8:
+    - ./startServers/bedwars 8
+    bedwars9:
+    - ./startServers/bedwars 9
+    creative:
+    - ./startServers/creative

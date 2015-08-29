@@ -1,0 +1,5 @@
+name: AMCBungee
+main: de.papaharni.amcbungee.AMCBungee
+version: 0.0.1
+author: PapaHarni
+depends: [BungeeYAML]
