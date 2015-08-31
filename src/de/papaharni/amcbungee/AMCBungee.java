@@ -1,5 +1,6 @@
 package de.papaharni.amcbungee;
 
+import de.bl4ckskull666.mu1ti1ingu41.Mu1ti1ingu41;
 import de.papaharni.amcbungee.commands.*;
 import de.papaharni.amcbungee.commands.whispers.*;
 import de.papaharni.amcbungee.events.*;
@@ -26,12 +27,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import javax.imageio.ImageIO;
-import net.craftminecraft.bungee.bungeeyaml.bukkitapi.Configuration;
-import net.craftminecraft.bungee.bungeeyaml.pluginapi.ConfigurablePlugin;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.Favicon;
@@ -42,12 +42,13 @@ import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
+import yamlapi.file.FileConfiguration;
 
 /**
  *
  * @author Pappi
  */
-public class AMCBungee extends ConfigurablePlugin {
+public class AMCBungee extends Plugin {
     private static AMCBungee _instance;
     private MySQLData _sql;
     private myConf _myConf;
@@ -70,6 +71,8 @@ public class AMCBungee extends ConfigurablePlugin {
     private static final HashMap<String, String> _playerLanguage = new HashMap<>();
     private final Collection<multis> _multis = new ArrayList<>();
     private final Collection<String> _playersBlocked = new ArrayList<>();
+    private FileConfiguration _config;
+    
     private static final HashMap<String, String> _playersLastReceiver = new HashMap<>();
     private static final ArrayList<Favicon> _favics = new ArrayList<>();
     private static final HashMap<String, ScheduledTask> _joinTasks = new HashMap<>();
@@ -101,14 +104,8 @@ public class AMCBungee extends ConfigurablePlugin {
 
     @Override
     public void onEnable() {
-        Configuration configuration = this.getConfig();
-        if(!this.getDataFolder().exists()) {
-            this.getDataFolder().mkdir();
-            configuration.options().copyDefaults(true);
-        }
-        _myConf = new myConf(configuration);
-        this.saveConfig();
-        
+        reloadConfig();
+
         _instance = this;
         total_votes = getTotalVotes();
         _sql = new MySQLData(_myConf);
@@ -149,6 +146,7 @@ public class AMCBungee extends ConfigurablePlugin {
         ProxyServer.getInstance().getPluginManager().registerListener(this, new ProxyPing());
         ProxyServer.getInstance().getPluginManager().registerListener(this, new AutoStartServer());
         ProxyServer.getInstance().getPluginManager().registerListener(this, new TabComplete());
+        ProxyServer.getInstance().getPluginManager().registerListener(this, new PluginMessage());
         
         File f = new File("GeoIp.dat");
         if(!f.exists()) {
@@ -208,6 +206,20 @@ public class AMCBungee extends ConfigurablePlugin {
         } catch (IOException ex) {
             getLogger().log(Level.SEVERE, "Can't load PlayerModes.", ex);
         }
+        
+        Mu1ti1ingu41.loadExternalDefaultLanguage(this, "languages");
+    }
+    
+    public FileConfiguration getConfig() {
+        return _config;
+    }
+
+    public void saveConfig() {
+        Mu1ti1ingu41.saveConfig(_config, _instance);
+    }
+    
+    public void reloadConfig() {
+        _config = Mu1ti1ingu41.loadConfig(_instance);
     }
     
     public static AMCBungee getInstance() {
@@ -262,17 +274,8 @@ public class AMCBungee extends ConfigurablePlugin {
         return _sql;
     }
     
-    public myConf getMyConfig() {
-        return _myConf;
-    }
-    
-    public void reloadMyConfig() {
-        reloadConfig();
-        _myConf = new myConf(getConfig());
-    }
-    
     public String getServerName(String server) {
-        return _myConf._sNames.containsKey(server)?_myConf._sNames.get(server):server;
+        return _config.getString("server-names." + server, server);
     }
     
     public HashMap<String, String> getPlayerOnServer() {
@@ -653,5 +656,21 @@ public class AMCBungee extends ConfigurablePlugin {
     
     public static HashMap<String, Boolean> getServerPingLastStatus() {
         return _serverStateLastStatus;
+    }
+    
+    private final static HashMap<UUID, Integer> _playerAge = new HashMap<>();
+    private final static HashMap<UUID, String> _playerGender = new HashMap<>();
+    private final static ArrayList<UUID> _playerVerification = new ArrayList<>();
+    
+    public static HashMap<UUID, Integer> getPlayerAge() {
+        return _playerAge;
+    }
+    
+    public static HashMap<UUID, String> getPlayerGender() {
+        return _playerGender;
+    }
+    
+    public static ArrayList<UUID> getPlayerVerification() {
+        return _playerVerification;
     }
 }

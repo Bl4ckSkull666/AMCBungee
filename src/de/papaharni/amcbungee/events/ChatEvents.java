@@ -6,6 +6,8 @@ import de.papaharni.amcbungee.util.ChatLogger;
 import de.papaharni.amcbungee.util.PlayerAccess;
 import de.papaharni.amcbungee.util.Rnd;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.UUID;
 import java.util.logging.Level;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
@@ -26,39 +28,14 @@ public class ChatEvents implements Listener {
     private final String[] _colorCodes = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
     private final String[] _formatCodes = {"k", "l", "m", "n", "o", "r"};
     private final String[] _linkCodes = {"http://", "www."};
+    private final HashMap<UUID, String> _lastMessage = new HashMap<>();
+    private final HashMap<UUID, Long> _lastMessageTime = new HashMap<>();
     
     public ChatEvents(AMCBungee plugin) {
         _plugin = plugin;
     }
     
-    /*@EventHandler(priority = EventPriority.HIGHEST)
-    public void onChatPlayerAccess(ChatEvent e) {
-        ProxiedPlayer ps = getPlayer(e.getSender());
-        if(ps == null)
-            return;
-        
-        PlayerAccess pa = AMCBungee.getPlayerAccess(ps.getName());
-        if(!pa.getChat() && ProxyServer.getInstance().getPlayers().size() < 20 && !ps.hasPermission("amcbungee.bypass.greeting")) {
-            if(!e.isCommand()) {
-                for(String str: AMCBungee.getInstance().getMyConfig()._chat_greeting) {
-                    if(e.getMessage().toLowerCase().contains(str.toLowerCase())) {
-                        pa.setAllowChat();
-                        return;
-                    }
-                }
-            }
-            
-            if(!pa.getChat()) {
-                if(AMCBungee.isDeLanguage(AMCBungee.getPlayerLang(ps.getName())))
-                    ps.sendMessage("§f[§a§oInfo§r§f] §c§oBitte begrüsse doch zuerst die anderen Spieler auf unserem Server.");
-                else
-                    ps.sendMessage("§f[§a§oInfo§r§f] §c§oPlease greet first the other peoples on our server.");
-                e.setCancelled(true);
-            }
-        }
-    }*/
-    
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onChatHighest(ChatEvent e) {
         if(e.isCancelled())
             return;
@@ -67,6 +44,23 @@ public class ChatEvents implements Listener {
         
         if(ps == null)
             return;
+        
+        if(_lastMessage.containsKey(ps.getUniqueId()) && _lastMessageTime.containsKey(ps.getUniqueId())) { 
+            if(_lastMessage.get(ps.getUniqueId()).equalsIgnoreCase(e.getMessage())) {
+                ps.sendMessage(AMCBungee.convert("&cYou can't send two time the same message."));
+                e.setCancelled(true);
+                return;
+            }
+            
+            if((System.currentTimeMillis()-_lastMessageTime.get(ps.getUniqueId())) < 5000) {
+                ps.sendMessage(AMCBungee.convert("&cPlease wait a moment before you send a message again."));
+                e.setCancelled(true);
+                return;
+            }
+        }
+        
+        ChatLogger cl = new ChatLogger(ps.getName(), ps.getServer().getInfo().getName(), e.getMessage());
+        ProxyServer.getInstance().getScheduler().runAsync(AMCBungee.getInstance(), new saveChat(cl));
         
         //Check is Chat allowed while said Hello
         PlayerAccess pa = AMCBungee.getPlayerAccess(ps.getName());
@@ -141,7 +135,7 @@ public class ChatEvents implements Listener {
         }
     }
     
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOW)
     public void onChatLowest(ChatEvent e) {
         if(e.isCancelled() || e.getMessage().isEmpty())
             return;
@@ -152,9 +146,9 @@ public class ChatEvents implements Listener {
         
         if(e.isCommand() || e.getMessage().startsWith("/"))
             return;
-        
-        ChatLogger cl = new ChatLogger(ps.getName(), ps.getServer().getInfo().getName(), e.getMessage());
-        ProxyServer.getInstance().getScheduler().runAsync(AMCBungee.getInstance(), new saveChat(cl));
+
+        _lastMessage.put(ps.getUniqueId(), e.getMessage());
+        _lastMessageTime.put(ps.getUniqueId(), System.currentTimeMillis());
         ProxyServer.getInstance().getScheduler().runAsync(_plugin, new aSyncChat(ps, e.getMessage()));
     }
     
@@ -181,7 +175,20 @@ public class ChatEvents implements Listener {
                 _msg = _msg.substring(1);
             
             String prefix = "§e<§b" + AMCBungee.getInstance().getServerName(_p.getServer().getInfo().getName()) + "§e>§f";
-            String name = "<§e" + ((_p.getDisplayName() != null && !_p.getDisplayName().isEmpty())?_p.getDisplayName():_p.getName()) + "§f> §6";
+            String name = "<§e" + ((_p.getDisplayName() != null && !_p.getDisplayName().isEmpty())?_p.getDisplayName():_p.getName());
+            if(AMCBungee.getPlayerAge().containsKey(_p.getUniqueId()) && AMCBungee.getPlayerAge().get(_p.getUniqueId()) > 0) {
+                String verifyColor = AMCBungee.getInstance().getConfig().getString("chat-verify-color.is" + (AMCBungee.getPlayerVerification().contains(_p.getUniqueId())?"":"not") + "verify", "&f");
+                String age = verifyColor + "[";
+                if(AMCBungee.getInstance().getConfig().getBoolean("chat-gender-color.use", false)) {
+                    if(!AMCBungee.getPlayerGender().containsKey(_p.getUniqueId()))
+                        AMCBungee.getPlayerGender().put(_p.getUniqueId(), "none");
+                    age += AMCBungee.getInstance().getConfig().getString("chat-gender-color." + AMCBungee.getPlayerGender().get(_p.getUniqueId()), "");
+                }
+                age += (AMCBungee.getPlayerAge().get(_p.getUniqueId()) > -1)?String.valueOf(AMCBungee.getPlayerAge().get(_p.getUniqueId())):"N/A";
+                age += verifyColor + "]";
+                name += age;
+            }
+            name += "§f> §6";
         
             if(!_p.hasPermission("amcbungee.link")) {
                 for(String search: _linkCodes)
@@ -199,7 +206,6 @@ public class ChatEvents implements Listener {
             Calendar cal = Calendar.getInstance();
             cal.setTimeInMillis(System.currentTimeMillis());
             String time = ChatColor.WHITE + "[" + ChatColor.GOLD + (cal.get(Calendar.HOUR_OF_DAY) < 10?"0":"") + cal.get(Calendar.HOUR_OF_DAY) + ":" + (cal.get(Calendar.MINUTE) < 10?"0":"") + cal.get(Calendar.MINUTE) + ":" + (cal.get(Calendar.SECOND) < 10?"0":"") + cal.get(Calendar.SECOND) + ChatColor.WHITE + "]";
-        
 
             for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
                 if(!p.getServer().getInfo().getName().equalsIgnoreCase(_p.getServer().getInfo().getName()))

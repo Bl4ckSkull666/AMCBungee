@@ -155,3 +155,11 @@ autostarts:
     - ./startServers/bedwars 9
     creative:
     - ./startServers/creative
+chat-gender-color:
+  use: true
+  male: '&9'
+  female: '&c'
+  none: '&7'
+chat-verify-color:
+  isverify: '&2'
+  isnotverify: '&e'
