@@ -21,19 +21,23 @@ import net.md_5.bungee.event.EventPriority;
 public class PluginMessage implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onPluginMessage(PluginMessageEvent e) {
-        if(!e.getTag().equalsIgnoreCase("MyBungee"))
+        if(!e.getTag().equalsIgnoreCase("BungeeCord"))
             return;
 
         ByteArrayDataInput in = ByteStreams.newDataInput(e.getData());
         String sub = in.readUTF();
+        if(!sub.equalsIgnoreCase("MyBungee"))
+            return;
+        
+        String cat = in.readUTF();
         UUID uuid = UUID.fromString(in.readUTF());
-        if(sub.equalsIgnoreCase("age")) {
+        if(cat.equalsIgnoreCase("age")) {
             int age = in.readInt();
             AMCBungee.getPlayerAge().put(uuid, age);
-        } else if(sub.equalsIgnoreCase("gender")) {
+        } else if(cat.equalsIgnoreCase("gender")) {
             String gender = in.readUTF();
             AMCBungee.getPlayerGender().put(uuid, gender);
-        } else if(sub.equalsIgnoreCase("verify")) {
+        } else if(cat.equalsIgnoreCase("verify")) {
             boolean bol = in.readBoolean();
             if(bol)
                 AMCBungee.getPlayerVerification().add(uuid);

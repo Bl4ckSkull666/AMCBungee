@@ -24,37 +24,33 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
  *
  * @author Pappi
  */
-public class MySQLData {
-    private final myConf _config;
-    
-    public MySQLData(myConf conf) {
-        _config = conf;
-        
+public final class MySQLData {
+    public MySQLData() {
         if(isMySQLDriver()) {
             Connection con = getConnect();
             if(con == null) {
                 ProxyServer.getInstance().getLogger().log(Level.WARNING, "Konnte keine Verbindung zur Server Datenbank aufbauen.");
-                AMCBungee.getInstance().getMyConfig()._smysql.put("use", "false");
+                AMCBungee.getInstance().getConfig().set("mysql.server.use", "false");
             } else {
-                AMCBungee.getInstance().getMyConfig()._smysql.put("use", setupStructure(con)?"true":"false");
+                AMCBungee.getInstance().getConfig().set("mysql.server.use", setupStructure(con)?"true":"false");
             }
             close(con);
             
             con = getHpConnect();
             if(con == null) {
                 ProxyServer.getInstance().getLogger().log(Level.WARNING, "Konnte keine Verbindung zur HP Datenbank aufbauen.");
-                AMCBungee.getInstance().getMyConfig()._hmysql.put("use", "false");
+                AMCBungee.getInstance().getConfig().set("mysql.homepage.use", "false");
             } else {
-                AMCBungee.getInstance().getMyConfig()._hmysql.put("use", setupHpStructure(con)?"true":"false");
+                AMCBungee.getInstance().getConfig().set("mysql.homepage.use", setupHpStructure(con)?"true":"false");
             }
             close(con);
             
             con = getBoConnect();
             if(con == null) {
                 ProxyServer.getInstance().getLogger().log(Level.WARNING, "Konnte keine Verbindung zur Foren Datenbank aufbauen.");
-                AMCBungee.getInstance().getMyConfig()._fmysql.put("use", "false");
+                AMCBungee.getInstance().getConfig().set("mysql.forum.use", "false");
             } else {
-                AMCBungee.getInstance().getMyConfig()._fmysql.put("use", setupBoStructure(con)?"true":"false");
+                AMCBungee.getInstance().getConfig().set("mysql.forum.use", setupBoStructure(con)?"true":"false");
             }
             close(con);
         }
@@ -71,32 +67,22 @@ public class MySQLData {
     }
     
     private Connection getConnect() {
-        Connection con = null;
-        try {
-            con = DriverManager.getConnection("jdbc:mysql://" + _config._smysql.get("host") + ":" + _config._smysql.get("port") + "/"
-                    + _config._smysql.get("data"), _config._smysql.get("user"), _config._smysql.get("pass"));
-        } catch(SQLException e) {
-            ProxyServer.getInstance().getLogger().log(Level.WARNING, "Fehler beim Herstellen der Verbindung zum MySQL Server!", e);
-        }
-        return con;
+        return getCon("server");
     }
     
     private Connection getHpConnect() {
-        Connection con = null;
-        try {
-            con = DriverManager.getConnection("jdbc:mysql://" + _config._hmysql.get("host") + ":" + _config._hmysql.get("port") + "/"
-                    + _config._hmysql.get("data"), _config._hmysql.get("user"), _config._hmysql.get("pass"));
-        } catch(SQLException e) {
-            ProxyServer.getInstance().getLogger().log(Level.WARNING, "Fehler beim Herstellen der Verbindung zum MySQL Server!", e);
-        }
-        return con;
+        return getCon("homepage");
     }
     
     public Connection getBoConnect() {
+        return getCon("forum");
+    }
+    
+    private Connection getCon(String type) {
         Connection con = null;
         try {
-            con = DriverManager.getConnection("jdbc:mysql://" + _config._fmysql.get("host") + ":" + _config._fmysql.get("port") + "/"
-                    + _config._fmysql.get("data"), _config._fmysql.get("user"), _config._fmysql.get("pass"));
+            con = DriverManager.getConnection("jdbc:mysql://" + AMCBungee.getInstance().getConfig().getString("mysql." + type + ".host", "127.0.0.1:3306") + "/"
+                    + AMCBungee.getInstance().getConfig().getString("mysql." + type + ".data", "bungeecord"), AMCBungee.getInstance().getConfig().getString("mysql." + type + ".user", "root"), AMCBungee.getInstance().getConfig().getString("mysql." + type + ".pass", ""));
         } catch(SQLException e) {
             ProxyServer.getInstance().getLogger().log(Level.WARNING, "Fehler beim Herstellen der Verbindung zum MySQL Server!", e);
         }
@@ -342,7 +328,7 @@ public class MySQLData {
     */
     
     public void setUUID(ProxiedPlayer p) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             Connection con = null;
             try {
                 boolean isSameNick = false;
@@ -389,7 +375,7 @@ public class MySQLData {
     }
     
     public void setServerByPlayer(String p, String s) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             Connection con = null;
 
             try {
@@ -413,7 +399,7 @@ public class MySQLData {
     }
     
     public void resetPlayerOnline() {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             Connection con = null;
 
             try {
@@ -437,7 +423,7 @@ public class MySQLData {
     }
     
     public void setOnlineStatus(String pName, String pUUID, int status, long ontime) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             Connection con = null;
 
             try {
@@ -464,7 +450,7 @@ public class MySQLData {
     }
     
     public void setUserIp(String p, String ip) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             Connection con = null;
             
             try {
@@ -485,7 +471,7 @@ public class MySQLData {
     }
     
     public String isIPRangeBlocked(int ip1, int ip2) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             String msg = "";
             Connection con = null;
             
@@ -511,7 +497,7 @@ public class MySQLData {
     }
     
     public void setIPRangeBlocked(int ip1, int ip2, String msg) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             Connection con = null;
             
             try {
@@ -534,7 +520,7 @@ public class MySQLData {
     }
     
     public void delIPRangeBlocked(int ip1, int ip2) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             Connection con = null;
             
             try {
@@ -553,7 +539,7 @@ public class MySQLData {
     }
     
     public String getLastIPByPlayer(String p) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             String ip = "";
             Connection con = null;
             
@@ -578,7 +564,7 @@ public class MySQLData {
     }
     
     public int getPlayerPoint(String name, String type) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             int p = -1;
             Connection con = null;
             
@@ -606,7 +592,7 @@ public class MySQLData {
     }
     
     public boolean setPlayerPoints(String name, int p, String type, boolean positive) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             Connection con = null;
             
             try {
@@ -636,7 +622,7 @@ public class MySQLData {
     }
     
     public void updatePlayerVotes(Votes v) {
-        if(Boolean.parseBoolean(_config._hmysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.homepage.use", false)) {
             Connection con = null;
             try {
                 con = getHpConnect();
@@ -660,7 +646,7 @@ public class MySQLData {
     }
     
     public boolean addPlayerVotes(int voteId, String str, String p) {
-        if(Boolean.parseBoolean(_config._hmysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.homepage.use", false)) {
             boolean success = true;
             Connection con = null;
             
@@ -686,7 +672,7 @@ public class MySQLData {
     }
     
     public boolean canSpendButton(String p) {
-        if(Boolean.parseBoolean(_config._hmysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.homepage.use", false)) {
             boolean can = true;
             Connection con = null;
             
@@ -713,7 +699,7 @@ public class MySQLData {
     }
     
     public boolean setSpendingKey(String p, String k) {
-        if(Boolean.parseBoolean(_config._hmysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.homepage.use", false)) {
             boolean success = true;
             Connection con = null;
             
@@ -756,7 +742,7 @@ public class MySQLData {
     }
     
     public void saveChatLogger(ChatLogger cl) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             Connection con = null;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             Date d = new Date();
@@ -779,7 +765,7 @@ public class MySQLData {
     }
     
     public void saveChatLogger(List<ChatLogger> clList) {
-        if(Boolean.parseBoolean(_config._smysql.get("use"))) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
             Connection con = null;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             Date d = new Date();

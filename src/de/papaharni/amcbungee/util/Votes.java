@@ -57,7 +57,7 @@ public class Votes {
     }
     
     private void clearAllVotes() {
-        for(int i = 0; i < AMCBungee.getInstance().getMyConfig()._maxVotes; i++)
+        for(int i = 0; i < AMCBungee.getInstance().getConfig().getInt("max-votes", 0); i++)
             _myvotes.put(i, false);
     }
 }

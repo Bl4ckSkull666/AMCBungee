@@ -37,7 +37,7 @@ public class ChatEvents implements Listener {
     
     @EventHandler(priority = EventPriority.HIGH)
     public void onChatHighest(ChatEvent e) {
-        if(e.isCancelled())
+        if(e.isCancelled() || e.getMessage().isEmpty())
             return;
                 
         ProxiedPlayer ps = getPlayer(e.getSender());        
@@ -68,7 +68,7 @@ public class ChatEvents implements Listener {
             pa.setAllowChat();
         else if(!pa.getChat() && ProxyServer.getInstance().getPlayers().size() < 20 && !ps.hasPermission("amcbungee.bypass.greeting")) {
             if(!e.isCommand()) {
-                for(String str: AMCBungee.getInstance().getMyConfig()._chat_greeting) {
+                for(String str: AMCBungee.getInstance().getConfig().getStringList("chat.greeting")) {
                     String msg = e.getMessage().toLowerCase();
                     if(msg.startsWith(str.toLowerCase())) {
                         pa.setAllowChat();
@@ -91,15 +91,15 @@ public class ChatEvents implements Listener {
         if(e.isCommand() && e.getMessage().startsWith("/")) {
             String[] cmd = e.getMessage().split(" ");
             if(cmd.length >= 1) {
-                if(AMCBungee.getInstance().getMyConfig()._cmd_hide.contains(cmd[0].substring(1)))
+                if(AMCBungee.getInstance().getConfig().getStringList("commands.hide").contains(cmd[0].substring(1)))
                     return;
-                if(AMCBungee.getInstance().getMyConfig()._cmd_info.contains(cmd[0].substring(1)) && !ps.hasPermission("amcbungee.bypass.commands")) {
+                if(AMCBungee.getInstance().getConfig().getStringList("commands.hide").contains(cmd[0].substring(1)) && !ps.hasPermission("amcbungee.bypass.commands")) {
                     for(ProxiedPlayer p: ProxyServer.getInstance().getPlayers()) {
                         if(p.hasPermission("amcbungee.team"))
                             AMCBungee.sendMessages(p, new String[] {"§4Player " + ps.getDisplayName() + " §4use " + cmd[0].substring(1) + " on " + ps.getServer().getInfo().getName(),"§cSpieler " + ps.getDisplayName() + " §cbenutzt " + cmd[0].substring(1) + " auf " + AMCBungee.getInstance().getServerName(ps.getServer().getInfo().getName())});
                     }
                     
-                    if(Rnd.get(1, 100) <= _plugin.getMyConfig()._cmd_info_kick_pc) {
+                    if(Rnd.get(1, 100) <= _plugin.getConfig().getInt("commands.infokickpc", 50)) {
                         if(AMCBungee.isDeLanguage(AMCBungee.getPlayerLang(ps.getName())))
                             ps.disconnect(AMCBungee.convert("Bitte verwende kein /" + cmd[0].substring(1) + " auf unserem Server. TMI und andere mogel Mods sind hier nicht erlaubt. Vielen Dank"));
                         else
@@ -115,7 +115,7 @@ public class ChatEvents implements Listener {
             return;
         
         //Check Chat word Filter
-        for(String word: _plugin.getMyConfig()._chat_wordfilter) {
+        for(String word: _plugin.getConfig().getStringList("chat.wordfilter")) {
             if(e.getMessage().toLowerCase().contains(word.toLowerCase())) {
                 if(!_plugin.getPlayersWarn().containsKey(ps.getName()))
                     _plugin.getPlayersWarn().put(ps.getName(), 1);
@@ -123,19 +123,23 @@ public class ChatEvents implements Listener {
                     _plugin.getPlayersWarn().put(ps.getName(), _plugin.getPlayersWarn().get(ps.getName())+1);
                 
                 if(AMCBungee.isDeLanguage(AMCBungee.getPlayerLang(ps.getName())))
-                    ps.disconnect(AMCBungee.convert("Bitte achte auf deine Wortwahl wenn du weiterhin auf unserem Server sein möchtest. ( Warnung " + _plugin.getPlayersWarn().get(ps.getName()) + "/" + _plugin.getMyConfig()._chat_warn + " )"));
+                    ps.disconnect(AMCBungee.convert("Bitte achte auf deine Wortwahl wenn du weiterhin auf unserem Server sein möchtest. ( Warnung " + _plugin.getPlayersWarn().get(ps.getName()) + "/" + _plugin.getConfig().getInt("chat.warning", 5) + " )"));
                 else
-                    ps.disconnect(AMCBungee.convert("Watch your word selection if you continue want to be on the server. ( Warning " + _plugin.getPlayersWarn().get(ps.getName()) + "/" + _plugin.getMyConfig()._chat_warn + " )"));
+                    ps.disconnect(AMCBungee.convert("Watch your word selection if you continue want to be on the server. ( Warning " + _plugin.getPlayersWarn().get(ps.getName()) + "/" + _plugin.getConfig().getInt("chat.warning", 5) + " )"));
                 
-                if(_plugin.getPlayersWarn().get(ps.getName()) >= _plugin.getMyConfig()._chat_warn)
+                if(_plugin.getPlayersWarn().get(ps.getName()) >= _plugin.getConfig().getInt("chat.warning", 5))
                     _plugin.setPlayersBlocked(ps.getName());
                 e.setCancelled(true);
                 return;
             }
         }
+
+        _lastMessage.put(ps.getUniqueId(), e.getMessage());
+        _lastMessageTime.put(ps.getUniqueId(), System.currentTimeMillis());
+        ProxyServer.getInstance().getScheduler().runAsync(_plugin, new aSyncChat(ps, e.getMessage()));
     }
     
-    @EventHandler(priority = EventPriority.LOW)
+    /*@EventHandler(priority = EventPriority.LOW)
     public void onChatLowest(ChatEvent e) {
         if(e.isCancelled() || e.getMessage().isEmpty())
             return;
@@ -150,7 +154,7 @@ public class ChatEvents implements Listener {
         _lastMessage.put(ps.getUniqueId(), e.getMessage());
         _lastMessageTime.put(ps.getUniqueId(), System.currentTimeMillis());
         ProxyServer.getInstance().getScheduler().runAsync(_plugin, new aSyncChat(ps, e.getMessage()));
-    }
+    }*/
     
     private ProxiedPlayer getPlayer(Connection c) {
         for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {

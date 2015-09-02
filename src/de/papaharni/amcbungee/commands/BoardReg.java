@@ -32,22 +32,22 @@ import net.md_5.bungee.api.plugin.Command;
  * @author Pappi
  */
 public class BoardReg extends Command {
-    
+    /*
     private final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^([a-zA-Z0-9_\\.\\-])+\\@(([a-zA-Z0-9\\-])+\\.)+([a-zA-Z0-9]{2,4})+$");
     
     private final String _mail_pattern = "^([a-zA-Z0-9_\\.\\-])+\\@(([a-zA-Z0-9\\-])+\\.)+([a-zA-Z0-9]{2,4})+$^";
-    
+    */
     public BoardReg() {
         super("register", "amcbungee.boardregister");
     }
 
     @Override
     public void execute(CommandSender s, String[] args) {
-        ProxiedPlayer p = (ProxiedPlayer)s;
+    /*    ProxiedPlayer p = (ProxiedPlayer)s;
         if(p == null)
             return;
         
-        if(!Boolean.parseBoolean(AMCBungee.getInstance().getMyConfig()._fmysql.get("use"))) {
+        if(!Boolean.parseBoolean(AMCBungee.getInstance().getConfig()._fmysql.get("use"))) {
             p.sendMessages(new String[]{"§2The Registration is not avalible yet. Please try again later.","§aDie Registration ist derzeit nicht verfuegbar. Bitte versuch es spaeter noch einmal."});
             return;
         }
@@ -581,7 +581,7 @@ public class BoardReg extends Command {
                     htmlbody += "</tr>";
                     htmlbody += "</table>";
                     htmlbody += "</body>";
-                    htmlbody += "</html>"; */
+                    htmlbody += "</html>";
                     
                     //Body
                     body = "Hallo " + _p.getName() + ",\r\n";
@@ -681,7 +681,7 @@ public class BoardReg extends Command {
                     htmlbody += "</tr>";
                     htmlbody += "</table>";
                     htmlbody += "</body>";
-                    htmlbody += "</html>"; */
+                    htmlbody += "</html>"; 
                     
                     //Body
                     body = "Hello " + _p.getName() + ",\r\n";
@@ -778,5 +778,6 @@ public class BoardReg extends Command {
         } catch(SQLException e) {
             ProxyServer.getInstance().getLogger().log(Level.WARNING, "Fehler beim Loeschvorgang einer fehlgelaufenen Account erstellung.", e);
         }
+    */
     }
 }

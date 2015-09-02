@@ -225,7 +225,7 @@ public class Vote extends Command {
                     _p.sendMessage(_prefix + ChatColor.GREEN + "oder Captcha's oder aehnliches.");
                     _p.sendMessage(_prefix + ChatColor.YELLOW + "http://vote.amc-server.de/?v=" + k);
                     _p.sendMessage(_prefix + ChatColor.RED + "Dieser Link ist nur 2 Minuten gültig. Bitte verwende diesen vor Ablauf der Zeit.");
-                    _p.sendMessage(_prefix + ChatColor.GOLD + "~~~~~~~~~~ " + ChatColor.DARK_PURPLE + (AMCBungee.getInstance().getMyConfig()._maxVotes-li.size()+1) + ChatColor.WHITE + " / " + ChatColor.DARK_PURPLE + AMCBungee.getInstance().getMyConfig()._maxVotes + ChatColor.GOLD + " ~~~~~~~~~~");
+                    _p.sendMessage(_prefix + ChatColor.GOLD + "~~~~~~~~~~ " + ChatColor.DARK_PURPLE + (AMCBungee.getInstance().getConfig().getInt("max-votes", 0)-li.size()+1) + ChatColor.WHITE + " / " + ChatColor.DARK_PURPLE + AMCBungee.getInstance().getConfig().getInt("max-votes", 0) + ChatColor.GOLD + " ~~~~~~~~~~");
                 } else {
                     _p.sendMessage(_prefix + ChatColor.GOLD + "~~~~~~~~~~ " + ChatColor.DARK_PURPLE + "Vote made easy" + ChatColor.GOLD + " ~~~~~~~~~~");
                     _p.sendMessage(_prefix + ChatColor.GREEN + "Please click on the following link,");
@@ -233,7 +233,7 @@ public class Vote extends Command {
                     _p.sendMessage(_prefix + ChatColor.GREEN + "or Captcha's or similar.");
                     _p.sendMessage(_prefix + ChatColor.YELLOW + "http://vote.amc-server.de/?v=" + k);
                     _p.sendMessage(_prefix + ChatColor.RED + "This link is valid for only 2 minutes. Please use this before the time expires.");
-                    _p.sendMessage(_prefix + ChatColor.GOLD + "~~~~~~~~~~ " + ChatColor.DARK_PURPLE + (AMCBungee.getInstance().getMyConfig()._maxVotes-li.size()+1) + ChatColor.WHITE + " / " + ChatColor.DARK_PURPLE + AMCBungee.getInstance().getMyConfig()._maxVotes + ChatColor.GOLD + " ~~~~~~~~~~");
+                    _p.sendMessage(_prefix + ChatColor.GOLD + "~~~~~~~~~~ " + ChatColor.DARK_PURPLE + (AMCBungee.getInstance().getConfig().getInt("max-votes", 0)-li.size()+1) + ChatColor.WHITE + " / " + ChatColor.DARK_PURPLE + AMCBungee.getInstance().getConfig().getInt("max-votes", 0) + ChatColor.GOLD + " ~~~~~~~~~~");
                 }
             } else {
                 if(AMCBungee.isDeLanguage(_l)) 

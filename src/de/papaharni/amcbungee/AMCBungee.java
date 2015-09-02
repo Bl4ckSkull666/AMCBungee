@@ -51,7 +51,6 @@ import yamlapi.file.FileConfiguration;
 public class AMCBungee extends Plugin {
     private static AMCBungee _instance;
     private MySQLData _sql;
-    private myConf _myConf;
     private final HashMap<String, String> _players = new HashMap<>();
     private final HashMap<String, Long> _playersJoin = new HashMap<>();
     private final HashMap<String, Votes> _playerVotes = new HashMap<>();
@@ -104,11 +103,12 @@ public class AMCBungee extends Plugin {
 
     @Override
     public void onEnable() {
-        reloadConfig();
-
         _instance = this;
+        reloadConfig();
         total_votes = getTotalVotes();
-        _sql = new MySQLData(_myConf);
+        _config.set("max-votes", total_votes);
+        
+        _sql = new MySQLData();
         
         //Alles was MySQL benötigt
         if(_sql != null) {
