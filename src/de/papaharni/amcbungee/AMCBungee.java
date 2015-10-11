@@ -81,6 +81,9 @@ public class AMCBungee extends Plugin {
     private static final HashMap<String, Boolean> _serverStateLastStatus = new HashMap<>();
     private static PlayerModes _playermodes;
     
+    private static Whitelister _whitelist = null;
+    private static ScheduledTask _whitelistTask = null;
+    
     @Override
     public void onDisable() {
         _playermodes.save();
@@ -99,6 +102,9 @@ public class AMCBungee extends Plugin {
             if(me.getValue() != null)
                 me.getValue().cancel();
         }
+        
+        if(_config.getBoolean("use-whitelist", false))
+            cancelWhitelistTask();
     }
 
     @Override
@@ -207,6 +213,12 @@ public class AMCBungee extends Plugin {
             getLogger().log(Level.SEVERE, "Can't load PlayerModes.", ex);
         }
         
+        if(_config.getBoolean("use-whitelist", false)) {
+            _whitelist = new Whitelister();
+            startWhitelistTask();
+            ProxyServer.getInstance().getPluginManager().registerCommand(this, new Whitelist());
+            ProxyServer.getInstance().getPluginManager().registerListener(this, new Whitelist());
+        }
         Mu1ti1ingu41.loadExternalDefaultLanguage(this, "languages");
     }
     
@@ -672,5 +684,26 @@ public class AMCBungee extends Plugin {
     
     public static ArrayList<UUID> getPlayerVerification() {
         return _playerVerification;
+    }
+    
+    public static Whitelister getWhitelist() {
+        return _whitelist;
+    }
+    
+    public static void startWhitelistTask() {
+        cancelWhitelistTask();
+        _whitelistTask = ProxyServer.getInstance().getScheduler().schedule(AMCBungee.getInstance(), new WhitelistUpdater(), 5, 5, TimeUnit.MINUTES);
+    }
+    
+    public static void cancelWhitelistTask() {
+        if(_whitelistTask != null)
+            _whitelistTask.cancel();
+    }
+    
+    public static class WhitelistUpdater implements Runnable {
+        @Override
+        public void run() {
+            _whitelist.load();
+        }
     }
 }

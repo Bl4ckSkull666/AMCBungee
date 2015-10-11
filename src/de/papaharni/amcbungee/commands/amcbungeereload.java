@@ -23,11 +23,16 @@ public class amcbungeereload extends Command {
     }
 
     @Override
-    public void execute(CommandSender s, String[] args) {
+    public void execute(CommandSender s, String[] a) {
         ProxiedPlayer p = (ProxiedPlayer)s;
         if(p == null)
             return;
-     
+        if(a.length >= 1) {
+            if(a[0].equalsIgnoreCase("whitelist")) {
+                
+                return;
+            }
+        }
         ProxyServer.getInstance().getScheduler().runAsync(AMCBungee.getInstance(), new doReload(p));
     }
     

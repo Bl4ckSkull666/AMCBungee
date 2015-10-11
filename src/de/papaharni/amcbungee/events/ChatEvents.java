@@ -11,7 +11,6 @@ import java.util.UUID;
 import java.util.logging.Level;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
@@ -52,7 +51,7 @@ public class ChatEvents implements Listener {
                 return;
             }
             
-            if((System.currentTimeMillis()-_lastMessageTime.get(ps.getUniqueId())) < 5000) {
+            if((System.currentTimeMillis()-_lastMessageTime.get(ps.getUniqueId())) < 2000) {
                 ps.sendMessage(AMCBungee.convert("&cPlease wait a moment before you send a message again."));
                 e.setCancelled(true);
                 return;
@@ -136,7 +135,7 @@ public class ChatEvents implements Listener {
 
         _lastMessage.put(ps.getUniqueId(), e.getMessage());
         _lastMessageTime.put(ps.getUniqueId(), System.currentTimeMillis());
-        ProxyServer.getInstance().getScheduler().runAsync(_plugin, new aSyncChat(ps, e.getMessage()));
+        //ProxyServer.getInstance().getScheduler().runAsync(_plugin, new aSyncChat(ps, e.getMessage()));
     }
     
     /*@EventHandler(priority = EventPriority.LOW)

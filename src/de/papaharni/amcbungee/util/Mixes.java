@@ -12,6 +12,7 @@ import de.papaharni.amcbungee.AMCBungee;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.UUID;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
@@ -200,5 +201,21 @@ public final class Mixes {
                 return true;
         }
         return false;
+    }
+    
+    public static UUID getUUID(String str) {
+        if(str.length() < 32)
+            return null;
+        try {
+            str = str.replace("-", "");
+            str = str.replaceFirst("([0-9a-fA-F]{8})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]+)", "$1-$2-$3-$4-$5");
+            return UUID.fromString(str);
+        } catch(Exception ex) {
+            return null;
+        }
+    }
+    
+    public static boolean isUUID(String str) {
+        return (getUUID(str) != null);
     }
 }

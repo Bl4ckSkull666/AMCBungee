@@ -7,6 +7,7 @@
 package de.papaharni.amcbungee;
 
 import de.papaharni.amcbungee.util.ChatLogger;
+import de.papaharni.amcbungee.util.Mixes;
 import de.papaharni.amcbungee.util.Votes;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -15,7 +16,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -24,7 +27,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
  *
  * @author Pappi
  */
-public final class MySQLData {
+public class MySQLData {
     public MySQLData() {
         if(isMySQLDriver()) {
             Connection con = getConnect();
@@ -32,7 +35,7 @@ public final class MySQLData {
                 ProxyServer.getInstance().getLogger().log(Level.WARNING, "Konnte keine Verbindung zur Server Datenbank aufbauen.");
                 AMCBungee.getInstance().getConfig().set("mysql.server.use", "false");
             } else {
-                AMCBungee.getInstance().getConfig().set("mysql.server.use", setupStructure(con)?"true":"false");
+                AMCBungee.getInstance().getConfig().set("mysql.server.use", setupStructure(con));
             }
             close(con);
             
@@ -41,7 +44,7 @@ public final class MySQLData {
                 ProxyServer.getInstance().getLogger().log(Level.WARNING, "Konnte keine Verbindung zur HP Datenbank aufbauen.");
                 AMCBungee.getInstance().getConfig().set("mysql.homepage.use", "false");
             } else {
-                AMCBungee.getInstance().getConfig().set("mysql.homepage.use", setupHpStructure(con)?"true":"false");
+                AMCBungee.getInstance().getConfig().set("mysql.homepage.use", setupHpStructure(con));
             }
             close(con);
             
@@ -50,7 +53,7 @@ public final class MySQLData {
                 ProxyServer.getInstance().getLogger().log(Level.WARNING, "Konnte keine Verbindung zur Foren Datenbank aufbauen.");
                 AMCBungee.getInstance().getConfig().set("mysql.forum.use", "false");
             } else {
-                AMCBungee.getInstance().getConfig().set("mysql.forum.use", setupBoStructure(con)?"true":"false");
+                AMCBungee.getInstance().getConfig().set("mysql.forum.use", setupBoStructure(con));
             }
             close(con);
         }
@@ -778,7 +781,7 @@ public final class MySQLData {
                     statement.setString(2, cl.getServer());
                     d.setTime(cl.getTime());
                     statement.setString(3, sdf.format(d));
-                    statement.setString(4, cl.getMsg());
+                    statement.setString(4, cl.getMsg().replace('§', '&'));
                     statement.execute();
                 }
                 statement.close();
@@ -789,7 +792,120 @@ public final class MySQLData {
         }
     }
     
-
+    public void loadWhiteList(Whitelister wl) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
+            Connection con = null;
+            int i = 0;
+            try {
+                con = getConnect();
+                PreparedStatement statement;
+                statement = con.prepareStatement("SELECT `name` FROM `whitelist` ORDER BY `id` ASC");
+                ResultSet rs = statement.executeQuery();
+                while(rs.next()) {
+                    if(Mixes.isUUID(rs.getString("name")))
+                        wl.add(Mixes.getUUID(rs.getString("name")));
+                    else
+                        wl.add(rs.getString("name").toLowerCase());
+                    i++;
+                }
+                rs.close();
+                statement.close();
+            } catch(SQLException e) {
+                ProxyServer.getInstance().getLogger().log(Level.WARNING, "Fehler beim Abruf der Whitelist!", e);
+            } finally {
+                ProxyServer.getInstance().getLogger().log(Level.WARNING, "Loaded {0} Whitelist entries!", String.valueOf(i));
+            }
+            close(con);
+        }
+    }
+    
+    public void replaceWhiteList(String name, UUID uuid) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
+            Connection con = null;
+            try {
+                con = getConnect();
+                PreparedStatement statement;
+                statement = con.prepareStatement("UPDATE `whitelist` SET `name` = ? WHERE `name` = ?");
+                statement.setString(1, uuid.toString());
+                statement.setString(2, name);
+                statement.execute();
+                statement.close();
+            } catch(SQLException e) {
+                ProxyServer.getInstance().getLogger().log(Level.WARNING, "Fehler beim replacen in der Whitelist!", e);
+            }
+            close(con);
+        }
+    }
+    
+    public void addWhiteList(String name, UUID uuid) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
+            Connection con = null;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+            Date d = new Date();
+            try {
+                con = getConnect();
+                PreparedStatement statement;
+                statement = con.prepareStatement("INSERT INTO `whitelist` (`name`,`added`) VALUES (?,?)");
+                if(uuid != null && name.equals(""))
+                    statement.setString(1, uuid.toString());
+                else
+                    statement.setString(1, name);
+                statement.setString(2, sdf.format(d));
+                statement.execute();
+                statement.close();
+            } catch(SQLException e) {
+                ProxyServer.getInstance().getLogger().log(Level.WARNING, "Fehler beim Eintragen in die Whitelist!", e);
+            }
+            close(con);
+        }
+    }
+    
+    public void removeWhiteList(String name, UUID uuid) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
+            Connection con = null;
+            try {
+                con = getConnect();
+                PreparedStatement statement;
+                statement = con.prepareStatement("DELETE FROM `whitelist` WHERE `name` = ?");
+                if(uuid != null && name.equals(""))
+                    statement.setString(1, uuid.toString());
+                else
+                    statement.setString(1, name);
+                statement.execute();
+                statement.close();
+            } catch(SQLException e) {
+                ProxyServer.getInstance().getLogger().log(Level.WARNING, "Fehler beim Eintragen in die Whitelist!", e);
+            }
+            close(con);
+        }
+    }
+    
+    public HashMap<String, String> listWhiteList(int begin) {
+        HashMap<String, String> temp = new HashMap<>();
+        if(AMCBungee.getInstance().getConfig().getBoolean("mysql.server.use", false)) {
+            Connection con = null;
+            try {
+                con = getConnect();
+                PreparedStatement statement;
+                statement = con.prepareStatement("SELECT w.name,u1.uuid,u2.name AS username FROM `whitelist` AS w LEFT JOIN `uuiddatabase` AS u1 ON u1.name = w.name LEFT JOIN `uuiddatabase` AS u2 ON u2.uuid = w.name ORDER BY w.id DESC LIMIT " + begin + ",10");
+                ResultSet rs = statement.executeQuery();
+                while(rs.next()) {
+                    if(rs.getString("uuid") != null) {
+                        temp.put(rs.getString("name"), rs.getString("uuid"));
+                    } else if(rs.getString("username") != null) {
+                        temp.put(rs.getString("username"), rs.getString("name"));
+                    } else {
+                        temp.put(rs.getString("name"), rs.getString("name"));
+                    }
+                }
+                statement.close();
+            } catch(SQLException e) {
+                ProxyServer.getInstance().getLogger().log(Level.WARNING, "Fehler beim Eintragen in die Whitelist!", e);
+            }
+            close(con);
+        }
+        return temp;
+    }
     /*public String isPlayerBannedByUUID(ProxiedPlayer p) {
         Connection con = null;
         String br = "";

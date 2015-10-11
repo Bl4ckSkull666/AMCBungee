@@ -46,6 +46,7 @@ public class Op extends Command {
             int i = 0;
             for(ProxiedPlayer pp: ProxyServer.getInstance().getPlayers()) {
                 if(pp.hasPermission("amcserver.team")) {
+                    pp.sendMessage();
                     pp.sendMessage(AMCBungee.convert(ChatColor.RED + "Player " + ChatColor.YELLOW + _spp.getName() + ChatColor.RED + " needs help on " + ChatColor.YELLOW + _spp.getServer().getInfo().getName() + ChatColor.RED + ". Please contact him." ));
                     i++;
                 }

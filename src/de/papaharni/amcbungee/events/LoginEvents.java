@@ -7,6 +7,7 @@
 package de.papaharni.amcbungee.events;
 
 import de.papaharni.amcbungee.AMCBungee;
+import de.papaharni.amcbungee.util.ChatLogger;
 import de.papaharni.amcbungee.util.Mixes;
 import de.papaharni.amcbungee.util.PlayerAccess;
 import de.papaharni.amcbungee.util.Votes;
@@ -77,14 +78,16 @@ public class LoginEvents implements Listener {
     
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPostLoginEvent(PostLoginEvent e) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("use-whitelist", false) && !AMCBungee.getWhitelist().isListed(e.getPlayer()))
+            return;
+        
         String country = Mixes.getCountryName(e.getPlayer().getPendingConnection().getAddress().getAddress());
         String langCode = Mixes.getLangCode(e.getPlayer().getPendingConnection().getAddress().getAddress());
-        String region = Mixes.getRegionName(e.getPlayer().getPendingConnection().getAddress().getAddress());
         TextComponent countryCode = new TextComponent(ChatColor.BLUE + langCode);
         countryCode.setHoverEvent(
                 new HoverEvent(
                         HoverEvent.Action.SHOW_TEXT, 
-                        new ComponentBuilder(ChatColor.GREEN + country + (region == null?"":(" " + ChatColor.YELLOW + "- " + ChatColor.DARK_GREEN + region))).create()
+                        new ComponentBuilder(ChatColor.GREEN + country).create()
                 )
         );
         
@@ -105,6 +108,9 @@ public class LoginEvents implements Listener {
                 pr.sendMessage(message);
             }
         }
+        
+        ChatLogger cl = new ChatLogger("server", "server", ChatColor.GRAY + e.getPlayer().getName() + ChatColor.GOLD + " has joined the Network.");
+        ProxyServer.getInstance().getScheduler().runAsync(AMCBungee.getInstance(), new AMCBungee.saveChat(cl));
         
         Title myTitle = ProxyServer.getInstance().createTitle();
         TextComponent tMsg = new TextComponent(ChatColor.GOLD + "Welcome on AngelZMineCraft");
@@ -142,7 +148,7 @@ public class LoginEvents implements Listener {
         if(AMCBungee.getInstance().getConfig().isList("ignore-names")) {
             for(String str: AMCBungee.getInstance().getConfig().getStringList("ignore-names")) {
                 if(e.getConnection().getName().toLowerCase().contains(str.toLowerCase())) {
-                    e.setCancelReason(ChatColor.RED + "Your name does not match our rFound " + ChatColor.YELLOW + str.toLowerCase() + ChatColor.RED + " in your Name as not allowed name part.");
+                    e.setCancelReason(ChatColor.RED + "Your name does not match our rules. Found " + ChatColor.YELLOW + str.toLowerCase() + ChatColor.RED + " in your Name as not allowed name part.");
                     e.setCancelled(true);
                     return;
                 }

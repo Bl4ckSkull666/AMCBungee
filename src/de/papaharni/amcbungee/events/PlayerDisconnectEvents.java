@@ -1,9 +1,12 @@
 package de.papaharni.amcbungee.events;
 
+import de.bl4ckskull666.mu1ti1ingu41.Mu1ti1ingu41;
 import de.papaharni.amcbungee.AMCBungee;
+import de.papaharni.amcbungee.util.ChatLogger;
 import de.papaharni.amcbungee.util.PlayerAccess;
 import java.util.ArrayList;
 import java.util.List;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
@@ -25,6 +28,9 @@ public class PlayerDisconnectEvents implements Listener {
     
     @EventHandler
     public void onServerKick(ServerKickEvent e) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("use-whitelist", false) && !AMCBungee.getWhitelist().isListed(e.getPlayer()))
+            return;
+        
         ProxiedPlayer p = e.getPlayer();
         if(p == null)
             return;
@@ -39,6 +45,9 @@ public class PlayerDisconnectEvents implements Listener {
     
     @EventHandler
     public void onPlayerDisconnect(PlayerDisconnectEvent e) {
+        if(AMCBungee.getInstance().getConfig().getBoolean("use-whitelist", false) && !AMCBungee.getWhitelist().isListed(e.getPlayer()))
+            return;
+        
         ProxiedPlayer p = e.getPlayer();
         if(p == null)
             return;
@@ -67,7 +76,7 @@ public class PlayerDisconnectEvents implements Listener {
         
         @Override
         public void run() {
-            AMCBungee.getInstance().getPlayersLanguage().remove(_p.getName());
+            AMCBungee.getPlayersLanguage().remove(_p.getName());
 
             long onTime = 0;
             if(_plugin.getOnlineSince().containsKey(_p.getName())) {
@@ -79,7 +88,7 @@ public class PlayerDisconnectEvents implements Listener {
             _plugin.getPlayerOnServer().remove(_p.getName());
             
             if(!_kickReason.isEmpty())
-                _p.disconnect(_kickReason);
+                _p.disconnect(Mu1ti1ingu41.castMessage(_kickReason));
             
             if(AMCBungee.getJoinTasks().containsKey(_p.getName().toLowerCase())) {
                 AMCBungee.getJoinTasks().get(_p.getName().toLowerCase()).cancel();
@@ -87,13 +96,16 @@ public class PlayerDisconnectEvents implements Listener {
                 return;
             }
             
+            String leftMessage = ChatColor.GRAY + _p.getName() + ChatColor.GOLD + " has left the Network. " + ChatColor.YELLOW + "Good Bye.";
+            if(_isKicked)
+                leftMessage = ChatColor.GOLD + "Oh no, " + ChatColor.GRAY + _p.getName() + ChatColor.GOLD + " has learned to fly out of the Network. " + ChatColor.YELLOW + "Good Bye.";
+            
+            ChatLogger cl = new ChatLogger("server", "server", leftMessage);
+            ProxyServer.getInstance().getScheduler().runAsync(AMCBungee.getInstance(), new AMCBungee.saveChat(cl));
+            
             for(ProxiedPlayer pr: ProxyServer.getInstance().getPlayers()) {
-                if(pr != _p && _p != null && pr != null) {
-                    if(_isKicked)
-                        pr.sendMessage("§6Oh no, §8" + _p.getName() + " §6has learned to fly out of the Network. §eGood Bye.");
-                    else
-                        pr.sendMessage("§8" + _p.getName() + " §6has left the Network. §eGood Bye.");
-                }
+                if(pr != _p && _p != null && pr != null)
+                    pr.sendMessage(Mu1ti1ingu41.castMessage(leftMessage));
             }
         }
     }

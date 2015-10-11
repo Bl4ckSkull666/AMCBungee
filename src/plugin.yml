@@ -2,4 +2,4 @@ name: AMCBungee
 main: de.papaharni.amcbungee.AMCBungee
 version: 0.0.1
 author: PapaHarni
-depends: [BungeeYAML]
+depends: [Mu1ti1ingu41]
